@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import type { Role } from '../common/roles.decorator';
-import type { AuthSession, AuthUser, LoginDto, RegisterDto } from './auth.types';
+import type {
+  AuthSession,
+  AuthUser,
+  LoginDto,
+  RegisterDto,
+} from './auth.types';
 
 interface StoredUser extends AuthUser {
   salt: string;
