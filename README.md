@@ -3,7 +3,7 @@
 Monorepo with:
 
 - `backend/` — NestJS API
-- `web/` — Next.js dashboard
+- `web/` — Next.js app (landing + auth + dashboard)
 - `infra/` — Mosquitto + Nginx configs
 - `docker-compose.yml` — local stack orchestration
 
@@ -18,7 +18,20 @@ Monorepo with:
 - `auth`
 - `health`
 
-RBAC is enforced via `x-role` header (`admin`, `analyst`, `operator`, `viewer`).
+RBAC is enforced via `x-role` (`admin`, `analyst`, `operator`, `viewer`).
+When authenticated with `x-auth-token`, role is resolved from the authenticated user.
+
+## Web pages
+
+- `/` — загальна сторінка проекту
+- `/auth` — реєстрація/авторизація
+- `/dashboard` — панель телеметрії (потребує логін)
+
+## Auth API
+
+- `POST /api/auth/register` → create user and return `{ token, user }`
+- `POST /api/auth/login` → login and return `{ token, user }`
+- `GET /api/auth/me` with `x-auth-token` → current user
 
 ## Run with Docker Compose
 
@@ -57,6 +70,11 @@ npm run dev
 
 ```bash
 curl http://localhost:4000/api/health
+
+curl -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Demo User","email":"demo@sensaura.local","password":"secret123"}'
+
 curl -H "x-role: admin" http://localhost:4000/api/telemetry
 curl -H "x-role: admin" -X POST http://localhost:4000/api/telemetry \
   -H "Content-Type: application/json" \
