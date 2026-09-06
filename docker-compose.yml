@@ -1,0 +1,72 @@
+services:
+  api:
+    build:
+      context: /home/runner/work/Sensaura/Sensaura/backend
+    container_name: sensaura-api
+    environment:
+      PORT: 4000
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_TOPIC: sensaura/telemetry/#
+      REDIS_URL: redis://redis:6379
+      PGHOST: timescaledb
+      PGPORT: 5432
+      PGDATABASE: sensaura
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    depends_on:
+      - timescaledb
+      - redis
+      - mosquitto
+    ports:
+      - '4000:4000'
+
+  web:
+    build:
+      context: /home/runner/work/Sensaura/Sensaura/web
+    container_name: sensaura-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost/api
+    depends_on:
+      - api
+    ports:
+      - '3000:3000'
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: sensaura-timescaledb
+    environment:
+      POSTGRES_DB: sensaura
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7-alpine
+    container_name: sensaura-redis
+    ports:
+      - '6379:6379'
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: sensaura-mosquitto
+    ports:
+      - '1883:1883'
+    volumes:
+      - /home/runner/work/Sensaura/Sensaura/infra/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: sensaura-nginx
+    depends_on:
+      - api
+      - web
+    ports:
+      - '80:80'
+    volumes:
+      - /home/runner/work/Sensaura/Sensaura/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  timescaledb_data:
