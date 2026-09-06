@@ -40,10 +40,15 @@ export class TelemetryController {
     @Req() request?: { user?: { id: string } },
   ) {
     const event = await this.telemetryService.publishFromApi(body);
-    await this.auditService.log('telemetry.publish', 'telemetry', request?.user?.id, {
-      eventId: event.eventId,
-      deviceId: event.deviceId,
-    });
+    await this.auditService.log(
+      'telemetry.publish',
+      'telemetry',
+      request?.user?.id,
+      {
+        eventId: event.eventId,
+        deviceId: event.deviceId,
+      },
+    );
     return event;
   }
 

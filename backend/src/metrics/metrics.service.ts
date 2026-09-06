@@ -10,11 +10,13 @@ export class MetricsService {
   ) {}
 
   async getPrometheusMetrics(): Promise<string> {
-    const telemetryCountResult = await this.databaseService.query<{ count: string }>(
-      'SELECT COUNT(*)::text AS count FROM telemetry_events',
-    );
+    const telemetryCountResult = await this.databaseService.query<{
+      count: string;
+    }>('SELECT COUNT(*)::text AS count FROM telemetry_events');
 
-    const sessionsCountResult = await this.databaseService.query<{ count: string }>(
+    const sessionsCountResult = await this.databaseService.query<{
+      count: string;
+    }>(
       'SELECT COUNT(*)::text AS count FROM sessions WHERE revoked_at IS NULL AND access_expires_at > NOW()',
     );
 

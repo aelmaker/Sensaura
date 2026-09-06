@@ -29,7 +29,11 @@ export class InteractionsController {
     @Query() query?: { limit?: string; offset?: string },
   ) {
     const { limit, offset } = parsePagination(query ?? {});
-    return this.interactionsService.list({ type, deviceId, campaignId }, limit, offset);
+    return this.interactionsService.list(
+      { type, deviceId, campaignId },
+      limit,
+      offset,
+    );
   }
 
   @Post()
@@ -45,19 +49,32 @@ export class InteractionsController {
     @Req() request?: { user?: { id: string } },
   ) {
     const created = await this.interactionsService.create(body);
-    await this.auditService.log('interaction.create', 'interactions', request?.user?.id, {
-      interactionId: created.id,
-    });
+    await this.auditService.log(
+      'interaction.create',
+      'interactions',
+      request?.user?.id,
+      {
+        interactionId: created.id,
+      },
+    );
     return created;
   }
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string, @Req() request?: { user?: { id: string } }) {
+  async remove(
+    @Param('id') id: string,
+    @Req() request?: { user?: { id: string } },
+  ) {
     const result = await this.interactionsService.remove(id);
-    await this.auditService.log('interaction.delete', 'interactions', request?.user?.id, {
-      interactionId: id,
-    });
+    await this.auditService.log(
+      'interaction.delete',
+      'interactions',
+      request?.user?.id,
+      {
+        interactionId: id,
+      },
+    );
     return result;
   }
 }

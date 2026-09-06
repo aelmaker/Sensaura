@@ -53,7 +53,10 @@ export class AuthController {
     @Body() body?: RefreshDto,
   ) {
     const me = await this.authService.getUserByAccessToken(accessToken);
-    const result = await this.authService.logout(accessToken, body?.refreshToken);
+    const result = await this.authService.logout(
+      accessToken,
+      body?.refreshToken,
+    );
     await this.auditService.log('auth.logout', 'auth', me?.id);
     return result;
   }

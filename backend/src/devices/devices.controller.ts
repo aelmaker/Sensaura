@@ -23,7 +23,10 @@ export class DevicesController {
 
   @Get()
   @Roles('admin', 'analyst', 'operator', 'viewer')
-  list(@Query('status') status?: string, @Query() query?: { limit?: string; offset?: string }) {
+  list(
+    @Query('status') status?: string,
+    @Query() query?: { limit?: string; offset?: string },
+  ) {
     const { limit, offset } = parsePagination(query ?? {});
     return this.devicesService.list(status, limit, offset);
   }
@@ -35,7 +38,9 @@ export class DevicesController {
     @Req() request?: { user?: { id: string } },
   ) {
     const created = await this.devicesService.create(body);
-    await this.auditService.log('device.create', 'devices', request?.user?.id, { deviceId: created.id });
+    await this.auditService.log('device.create', 'devices', request?.user?.id, {
+      deviceId: created.id,
+    });
     return created;
   }
 
@@ -47,15 +52,22 @@ export class DevicesController {
     @Req() request?: { user?: { id: string } },
   ) {
     const updated = await this.devicesService.update(id, body);
-    await this.auditService.log('device.update', 'devices', request?.user?.id, { deviceId: id });
+    await this.auditService.log('device.update', 'devices', request?.user?.id, {
+      deviceId: id,
+    });
     return updated;
   }
 
   @Delete(':id')
   @Roles('admin')
-  async remove(@Param('id') id: string, @Req() request?: { user?: { id: string } }) {
+  async remove(
+    @Param('id') id: string,
+    @Req() request?: { user?: { id: string } },
+  ) {
     const result = await this.devicesService.remove(id);
-    await this.auditService.log('device.delete', 'devices', request?.user?.id, { deviceId: id });
+    await this.auditService.log('device.delete', 'devices', request?.user?.id, {
+      deviceId: id,
+    });
     return result;
   }
 }

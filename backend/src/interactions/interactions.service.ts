@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { DatabaseService } from '../database/database.service';
 
@@ -22,7 +26,11 @@ interface InteractionInput {
 export class InteractionsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async list(filters: { type?: string; deviceId?: string; campaignId?: string }, limit = 20, offset = 0) {
+  async list(
+    filters: { type?: string; deviceId?: string; campaignId?: string },
+    limit = 20,
+    offset = 0,
+  ) {
     const result = await this.databaseService.query<InteractionRow>(
       `SELECT id, device_id, campaign_id, type, payload, created_at
        FROM interactions
@@ -31,10 +39,16 @@ export class InteractionsService {
          AND ($3::uuid IS NULL OR campaign_id = $3)
        ORDER BY created_at DESC
        LIMIT $4 OFFSET $5`,
-      [filters.type ?? null, filters.deviceId ?? null, filters.campaignId ?? null, limit, offset],
+      [
+        filters.type ?? null,
+        filters.deviceId ?? null,
+        filters.campaignId ?? null,
+        limit,
+        offset,
+      ],
     );
 
-    return result.rows.map(this.mapRow);
+    return result.rows.map((row) => this.mapRow(row));
   }
 
   async create(input: InteractionInput) {
@@ -60,7 +74,10 @@ export class InteractionsService {
   }
 
   async remove(id: string) {
-    const result = await this.databaseService.query('DELETE FROM interactions WHERE id = $1', [id]);
+    const result = await this.databaseService.query(
+      'DELETE FROM interactions WHERE id = $1',
+      [id],
+    );
     if (!result.rowCount) {
       throw new NotFoundException('interaction not found');
     }

@@ -7,7 +7,9 @@ async function bootstrap() {
 
   app.use(helmet());
   app.enableCors({
-    origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://localhost')
+    origin: (
+      process.env.CORS_ORIGINS ?? 'http://localhost:3000,http://localhost'
+    )
       .split(',')
       .map((origin) => origin.trim()),
     credentials: false,

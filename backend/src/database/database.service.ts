@@ -1,7 +1,12 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { Pool, type QueryResult } from 'pg';
+import { Pool, type QueryResult, type QueryResultRow } from 'pg';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -42,7 +47,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return this.ready;
   }
 
-  async query<T = unknown>(text: string, params: unknown[] = []): Promise<QueryResult<T>> {
+  async query<T extends QueryResultRow = QueryResultRow>(
+    text: string,
+    params: unknown[] = [],
+  ): Promise<QueryResult<T>> {
     if (!this.pool) {
       throw new Error('Database is not initialized');
     }

@@ -33,9 +33,12 @@ export class RoleGuard implements CanActivate {
     }>();
 
     const tokenHeader = request.headers['x-access-token'];
-    const headerToken = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+    const headerToken = Array.isArray(tokenHeader)
+      ? tokenHeader[0]
+      : tokenHeader;
     const queryToken = request?.query?.accessToken;
-    const accessToken = headerToken ?? (typeof queryToken === 'string' ? queryToken : undefined);
+    const accessToken =
+      headerToken ?? (typeof queryToken === 'string' ? queryToken : undefined);
 
     if (!accessToken) {
       throw new UnauthorizedException('missing x-access-token');

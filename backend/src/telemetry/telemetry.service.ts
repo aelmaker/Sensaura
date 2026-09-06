@@ -30,7 +30,12 @@ export class TelemetryService {
     );
   }
 
-  async list(filters: { deviceId?: string; metric?: string; limit: number; offset: number }) {
+  async list(filters: {
+    deviceId?: string;
+    metric?: string;
+    limit: number;
+    offset: number;
+  }) {
     const result = await this.databaseService.query<TelemetryRow>(
       `SELECT event_id, device_id, metric, value, recorded_at, source, topic, payload
        FROM telemetry_events
@@ -38,13 +43,20 @@ export class TelemetryService {
          AND ($2::text IS NULL OR metric = $2)
        ORDER BY recorded_at DESC
        LIMIT $3 OFFSET $4`,
-      [filters.deviceId ?? null, filters.metric ?? null, filters.limit, filters.offset],
+      [
+        filters.deviceId ?? null,
+        filters.metric ?? null,
+        filters.limit,
+        filters.offset,
+      ],
     );
 
     return result.rows.map((row) => this.mapRow(row));
   }
 
-  async publishFromApi(input: Partial<TelemetryEvent>): Promise<TelemetryEvent> {
+  async publishFromApi(
+    input: Partial<TelemetryEvent>,
+  ): Promise<TelemetryEvent> {
     const event: TelemetryEvent = {
       eventId: input.eventId ?? randomUUID(),
       deviceId: input.deviceId ?? 'unknown-device',
@@ -61,7 +73,10 @@ export class TelemetryService {
     return event;
   }
 
-  async ingestFromMqtt(topic: string, payload: string): Promise<TelemetryEvent | null> {
+  async ingestFromMqtt(
+    topic: string,
+    payload: string,
+  ): Promise<TelemetryEvent | null> {
     try {
       const parsed = JSON.parse(payload) as Partial<TelemetryEvent>;
       const event: TelemetryEvent = {

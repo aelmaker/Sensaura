@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { DatabaseService } from '../database/database.service';
 
@@ -31,7 +35,7 @@ export class DevicesService {
       [status ?? null, limit, offset],
     );
 
-    return result.rows.map(this.mapRow);
+    return result.rows.map((row) => this.mapRow(row));
   }
 
   async create(input: DeviceInput) {
@@ -61,7 +65,12 @@ export class DevicesService {
            updated_at = NOW()
        WHERE id = $1
        RETURNING id, name, status, location, created_at, updated_at`,
-      [id, input.name?.trim() || null, input.status?.trim() || null, input.location?.trim() || null],
+      [
+        id,
+        input.name?.trim() || null,
+        input.status?.trim() || null,
+        input.location?.trim() || null,
+      ],
     );
 
     if (!result.rows[0]) {
@@ -72,7 +81,10 @@ export class DevicesService {
   }
 
   async remove(id: string) {
-    const result = await this.databaseService.query('DELETE FROM devices WHERE id = $1', [id]);
+    const result = await this.databaseService.query(
+      'DELETE FROM devices WHERE id = $1',
+      [id],
+    );
 
     if (!result.rowCount) {
       throw new NotFoundException('device not found');

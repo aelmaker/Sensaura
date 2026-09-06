@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { DatabaseService } from '../database/database.service';
 
@@ -35,7 +39,7 @@ export class CampaignsService {
       [status ?? null, limit, offset],
     );
 
-    return result.rows.map(this.mapRow);
+    return result.rows.map((row) => this.mapRow(row));
   }
 
   async create(input: CampaignInput) {
@@ -100,7 +104,10 @@ export class CampaignsService {
   }
 
   async remove(id: string) {
-    const result = await this.databaseService.query('DELETE FROM campaigns WHERE id = $1', [id]);
+    const result = await this.databaseService.query(
+      'DELETE FROM campaigns WHERE id = $1',
+      [id],
+    );
     if (!result.rowCount) {
       throw new NotFoundException('campaign not found');
     }

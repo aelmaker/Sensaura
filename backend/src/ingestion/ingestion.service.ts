@@ -57,7 +57,11 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('message', (messageTopic, message) => {
-      this.queue.push({ topic: messageTopic, payload: message.toString(), attempt: 0 });
+      this.queue.push({
+        topic: messageTopic,
+        payload: message.toString(),
+        attempt: 0,
+      });
       void this.processQueue();
     });
 
@@ -95,7 +99,10 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
       }
 
       try {
-        const ingested = await this.telemetryService.ingestFromMqtt(item.topic, item.payload);
+        const ingested = await this.telemetryService.ingestFromMqtt(
+          item.topic,
+          item.payload,
+        );
         if (!ingested) {
           throw new Error('invalid telemetry payload');
         }
@@ -104,7 +111,9 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         if (item.attempt < 3) {
           this.queue.push({ ...item, attempt: item.attempt + 1 });
-          await new Promise((resolve) => setTimeout(resolve, 100 * (item.attempt + 1)));
+          await new Promise((resolve) =>
+            setTimeout(resolve, 100 * (item.attempt + 1)),
+          );
         } else {
           this.failedCount += 1;
           this.logger.warn(

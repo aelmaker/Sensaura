@@ -7,7 +7,12 @@ export class AuditService {
 
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async log(action: string, resource: string, userId?: string, metadata: Record<string, unknown> = {}): Promise<void> {
+  async log(
+    action: string,
+    resource: string,
+    userId?: string,
+    metadata: Record<string, unknown> = {},
+  ): Promise<void> {
     try {
       await this.databaseService.query(
         `INSERT INTO audit_logs (user_id, action, resource, metadata)

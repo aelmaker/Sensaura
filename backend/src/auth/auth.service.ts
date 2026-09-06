@@ -187,13 +187,18 @@ export class AuthService {
     );
 
     const row = result.rows[0];
-    if (!row || row.revoked_at || new Date(row.refresh_expires_at) < new Date()) {
+    if (
+      !row ||
+      row.revoked_at ||
+      new Date(row.refresh_expires_at) < new Date()
+    ) {
       throw new UnauthorizedException('invalid refresh token');
     }
 
-    await this.databaseService.query('UPDATE sessions SET revoked_at = NOW() WHERE id = $1', [
-      row.session_id,
-    ]);
+    await this.databaseService.query(
+      'UPDATE sessions SET revoked_at = NOW() WHERE id = $1',
+      [row.session_id],
+    );
 
     const user: UserRow = {
       id: row.user_id,
@@ -209,7 +214,10 @@ export class AuthService {
     return this.createSession(user);
   }
 
-  async logout(accessToken?: string, refreshToken?: string): Promise<{ status: string }> {
+  async logout(
+    accessToken?: string,
+    refreshToken?: string,
+  ): Promise<{ status: string }> {
     if (!accessToken && !refreshToken) {
       throw new BadRequestException('token is required');
     }
@@ -222,7 +230,10 @@ export class AuthService {
            ($1::text IS NOT NULL AND access_token_hash = $1)
            OR ($2::text IS NOT NULL AND refresh_token_hash = $2)
          )`,
-      [accessToken ? this.hashToken(accessToken) : null, refreshToken ? this.hashToken(refreshToken) : null],
+      [
+        accessToken ? this.hashToken(accessToken) : null,
+        refreshToken ? this.hashToken(refreshToken) : null,
+      ],
     );
 
     if (!result.rowCount) {
@@ -232,7 +243,10 @@ export class AuthService {
     return { status: 'logged_out' };
   }
 
-  async revoke(input: RevokeSessionDto, currentRole: Role): Promise<{ status: string }> {
+  async revoke(
+    input: RevokeSessionDto,
+    currentRole: Role,
+  ): Promise<{ status: string }> {
     if (currentRole !== 'admin') {
       throw new ForbiddenException('admin role is required');
     }
@@ -284,7 +298,9 @@ export class AuthService {
     };
   }
 
-  async confirmPasswordReset(input: ResetPasswordConfirmDto): Promise<{ status: string }> {
+  async confirmPasswordReset(
+    input: ResetPasswordConfirmDto,
+  ): Promise<{ status: string }> {
     const token = input.token?.trim();
     const newPassword = input.newPassword?.trim();
 
@@ -292,7 +308,9 @@ export class AuthService {
       throw new BadRequestException('token and newPassword are required');
     }
     if (newPassword.length < 8) {
-      throw new BadRequestException('newPassword must be at least 8 characters');
+      throw new BadRequestException(
+        'newPassword must be at least 8 characters',
+      );
     }
 
     const userResult = await this.databaseService.query<
@@ -328,9 +346,10 @@ export class AuthService {
       [salt, hash, user.id],
     );
 
-    await this.databaseService.query('UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1', [
-      user.id,
-    ]);
+    await this.databaseService.query(
+      'UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1',
+      [user.id],
+    );
 
     return { status: 'password_reset' };
   }
@@ -374,7 +393,11 @@ export class AuthService {
     );
 
     const row = result.rows[0];
-    if (!row || row.revoked_at || new Date(row.access_expires_at) < new Date()) {
+    if (
+      !row ||
+      row.revoked_at ||
+      new Date(row.access_expires_at) < new Date()
+    ) {
       return null;
     }
 
@@ -414,7 +437,10 @@ export class AuthService {
   }
 
   private toAuthUser(
-    user: Pick<UserRow, 'id' | 'email' | 'name' | 'role' | 'email_verified' | 'created_at'>,
+    user: Pick<
+      UserRow,
+      'id' | 'email' | 'name' | 'role' | 'email_verified' | 'created_at'
+    >,
   ): AuthUser {
     return {
       id: user.id,
