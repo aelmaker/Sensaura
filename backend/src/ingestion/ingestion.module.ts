@@ -7,5 +7,6 @@ import { TelemetryModule } from '../telemetry/telemetry.module';
   imports: [TelemetryModule],
   controllers: [IngestionController],
   providers: [IngestionService],
+  exports: [IngestionService],
 })
 export class IngestionModule {}

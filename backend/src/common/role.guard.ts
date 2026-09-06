@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthService } from '../auth/auth.service';
@@ -15,7 +16,7 @@ export class RoleGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -28,27 +29,27 @@ export class RoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<{
       headers: Record<string, string | string[] | undefined>;
       query?: Record<string, unknown>;
+      user?: { id: string; role: Role };
     }>();
 
-    const roleHeader = request.headers['x-role'];
-    const headerRole = Array.isArray(roleHeader) ? roleHeader[0] : roleHeader;
-    const queryRole = request?.query?.role;
-    const authorization = request.headers.authorization;
-    const authHeader = Array.isArray(authorization)
-      ? authorization[0]
-      : authorization;
+    const tokenHeader = request.headers['x-access-token'];
+    const headerToken = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+    const queryToken = request?.query?.accessToken;
+    const accessToken = headerToken ?? (typeof queryToken === 'string' ? queryToken : undefined);
 
-    const tokenHeader = request.headers['x-auth-token'];
-    const token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+    if (!accessToken) {
+      throw new UnauthorizedException('missing x-access-token');
+    }
 
-    const role = this.authService.resolveRole(
-      token,
-      authHeader,
-      headerRole ?? (typeof queryRole === 'string' ? queryRole : undefined),
-    );
+    const user = await this.authService.getUserByAccessToken(accessToken);
+    if (!user) {
+      throw new UnauthorizedException('invalid access token');
+    }
 
-    if (!role || !requiredRoles.includes(role)) {
-      throw new ForbiddenException('Missing or invalid role');
+    request.user = { id: user.id, role: user.role };
+
+    if (!requiredRoles.includes(user.role)) {
+      throw new ForbiddenException('insufficient role');
     }
 
     return true;

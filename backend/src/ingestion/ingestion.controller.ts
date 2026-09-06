@@ -1,15 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { Roles } from '../common/roles.decorator';
+import { IngestionService } from './ingestion.service';
 
 @Controller('ingestion')
 export class IngestionController {
+  constructor(private readonly ingestionService: IngestionService) {}
+
   @Get('status')
-  @Roles('admin', 'operator')
+  @Roles('admin', 'operator', 'analyst')
   status() {
-    return {
-      status: 'ok',
-      mqttUrl: process.env.MQTT_URL ?? 'mqtt://mosquitto:1883',
-      topic: process.env.MQTT_TOPIC ?? 'sensaura/telemetry/#',
-    };
+    return this.ingestionService.getStatus();
   }
 }

@@ -3,8 +3,10 @@ services:
     build:
       context: /home/runner/work/Sensaura/Sensaura/backend
     container_name: sensaura-api
+    restart: unless-stopped
     environment:
       PORT: 4000
+      CORS_ORIGINS: http://localhost:3000,http://localhost
       MQTT_URL: mqtt://mosquitto:1883
       MQTT_TOPIC: sensaura/telemetry/#
       REDIS_URL: redis://redis:6379
@@ -24,6 +26,7 @@ services:
     build:
       context: /home/runner/work/Sensaura/Sensaura/web
     container_name: sensaura-web
+    restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_BASE_URL: http://localhost/api
     depends_on:
@@ -34,6 +37,7 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg16
     container_name: sensaura-timescaledb
+    restart: unless-stopped
     environment:
       POSTGRES_DB: sensaura
       POSTGRES_USER: postgres
@@ -46,12 +50,14 @@ services:
   redis:
     image: redis:7-alpine
     container_name: sensaura-redis
+    restart: unless-stopped
     ports:
       - '6379:6379'
 
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: sensaura-mosquitto
+    restart: unless-stopped
     ports:
       - '1883:1883'
     volumes:
@@ -60,6 +66,7 @@ services:
   nginx:
     image: nginx:stable-alpine
     container_name: sensaura-nginx
+    restart: unless-stopped
     depends_on:
       - api
       - web
